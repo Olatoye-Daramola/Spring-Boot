@@ -12,5 +12,5 @@ public interface ProductService {
     List<Product> getAllProducts();
     Product findProductById(Long productId) throws ProductDoesNotExistException;
     Product createProduct(ProductDto productDto) throws BusinessLogicException;
-    Product updateProductById(Long productId, Product product) throws ProductDoesNotExistException;
+    Product updateProductById(Long productId, ProductDto productDto) throws ProductDoesNotExistException;
 }
