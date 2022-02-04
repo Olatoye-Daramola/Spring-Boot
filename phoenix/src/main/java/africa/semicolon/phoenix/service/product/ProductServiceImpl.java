@@ -49,17 +49,17 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product updateProductById(Long productId, Product product) throws ProductDoesNotExistException {
+    public Product updateProductById(Long productId, ProductDto productDto) throws ProductDoesNotExistException {
         if(productId == null) throw new IllegalArgumentException("ID cannot be null");
 
         Optional<Product> queryResult = productRepository.findById(productId);
         if(queryResult.isEmpty())
             throw new ProductDoesNotExistException("Product with ID : " + productId + " does not exist");
 
-        queryResult.get().setName(product.getName());
-        queryResult.get().setPrice(product.getPrice());
-        queryResult.get().setQuantity(product.getQuantity());
-        queryResult.get().setDescription(product.getDescription());
+        queryResult.get().setName(productDto.getName());
+        queryResult.get().setPrice(productDto.getPrice());
+        queryResult.get().setQuantity(productDto.getQuantity());
+        queryResult.get().setDescription(productDto.getDescription());
 
         return productRepository.save(queryResult.get());
     }
