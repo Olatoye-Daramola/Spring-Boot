@@ -35,9 +35,9 @@ public class ProductRestController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody Product product) {
+    public ResponseEntity<?> updateProduct(@PathVariable Long id, @RequestBody ProductDto productDto) {
         try {
-            Product updatedProduct = productService.updateProductById(id, product);
+            Product updatedProduct = productService.updateProductById(id, productDto);
             return ResponseEntity.ok().body(updatedProduct);
         }  catch (IllegalArgumentException | ProductDoesNotExistException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
