@@ -1,0 +1,6 @@
+Create Employee record Application
+Add employee
+Get all employee record
+update employee record
+delete employee record
+get a single employee
