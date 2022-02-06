@@ -75,4 +75,20 @@ class ProductRepositoryTest {
         assertThat(product.getPrice()).isEqualTo(2340);
         assertThat(product.getQuantity()).isEqualTo(3);
     }
+
+    @Test
+    @DisplayName("update product attribute")
+    void updateProductAttributeTest() {
+        Product savedProduct = productRepository.findByName("Macbook Air").orElse(null);
+        assertThat(savedProduct).isNotNull();
+        assertThat(savedProduct.getName()).isEqualTo("Macbook Air");
+        assertThat(savedProduct.getPrice()).isEqualTo(1340);
+
+        savedProduct.setName("Macbook Air 13");
+        savedProduct.setPrice(23200);
+
+        productRepository.save(savedProduct);
+        assertThat(savedProduct.getName()).isEqualTo("Macbook Air 13");
+        assertThat(savedProduct.getPrice()).isEqualTo(23200);
+    }
 }
