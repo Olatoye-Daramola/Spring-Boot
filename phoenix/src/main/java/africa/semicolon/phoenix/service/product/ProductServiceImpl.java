@@ -5,6 +5,11 @@ import africa.semicolon.phoenix.data.models.Product;
 import africa.semicolon.phoenix.data.repositories.ProductRepository;
 import africa.semicolon.phoenix.web.exceptions.BusinessLogicException;
 import africa.semicolon.phoenix.web.exceptions.ProductDoesNotExistException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -49,18 +54,51 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product updateProductById(Long productId, ProductDto productDto) throws ProductDoesNotExistException {
+    public Product saveOrUpdate(Product product) throws BusinessLogicException {
+        if(product == null) throw new BusinessLogicException("Product cannot be null");
+        return productRepository.save(product);
+    }
+
+//    @Override
+//    public Product updateProductById(Long productId, ProductDto productDto) throws ProductDoesNotExistException {
+//        if(productId == null) throw new IllegalArgumentException("ID cannot be null");
+//
+//        Optional<Product> queryResult = productRepository.findById(productId);
+//        if(queryResult.isEmpty())
+//            throw new ProductDoesNotExistException("Product with ID : " + productId + " does not exist");
+//
+//        queryResult.get().setName(productDto.getName());
+//        queryResult.get().setPrice(productDto.getPrice());
+//        queryResult.get().setQuantity(productDto.getQuantity());
+//        queryResult.get().setDescription(productDto.getDescription());
+//
+//        return productRepository.save(queryResult.get());
+//    }
+
+    @Override
+    public Product updateProductDetails(Long productId, JsonPatch productPatch)
+            throws ProductDoesNotExistException, BusinessLogicException, JsonPatchException, JsonProcessingException {
         if(productId == null) throw new IllegalArgumentException("ID cannot be null");
 
-        Optional<Product> queryResult = productRepository.findById(productId);
-        if(queryResult.isEmpty())
+        Optional<Product> productQuery = productRepository.findById(productId);
+        if(productQuery.isEmpty())
             throw new ProductDoesNotExistException("Product with ID : " + productId + " does not exist");
 
-        queryResult.get().setName(productDto.getName());
-        queryResult.get().setPrice(productDto.getPrice());
-        queryResult.get().setQuantity(productDto.getQuantity());
-        queryResult.get().setDescription(productDto.getDescription());
+        Product targetProduct = productQuery.get();
+        try {
+            targetProduct = applyPatchToProduct(productPatch, targetProduct);
+            return saveOrUpdate(targetProduct);
+        } catch (JsonPatchException | JsonProcessingException je) {
+            throw new BusinessLogicException("Update failed");
+        }
+    }
 
-        return productRepository.save(queryResult.get());
+    private Product applyPatchToProduct (JsonPatch productPatch, Product targetProduct)
+            throws JsonPatchException, JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode patched = productPatch.
+                apply(objectMapper.convertValue(targetProduct, JsonNode.class));
+
+        return objectMapper.treeToValue(patched, Product.class);
     }
 }
