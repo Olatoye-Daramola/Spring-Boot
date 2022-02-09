@@ -63,8 +63,8 @@ public class EmployeeController {
         }
     }
 
-    @DeleteMapping()
-    public ResponseEntity<?> deleteEmployee(@RequestBody Employee employee) {
+    @DeleteMapping("/{employee}")
+    public ResponseEntity<?> deleteEmployee(@PathVariable Employee employee) {
         if (employee == null) return ResponseEntity.status(NOT_FOUND).body("Provide employee");
         try {
             employeeService.deleteEmployee(employee);
