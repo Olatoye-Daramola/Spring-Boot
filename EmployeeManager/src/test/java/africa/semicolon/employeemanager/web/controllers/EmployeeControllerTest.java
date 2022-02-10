@@ -7,6 +7,7 @@ import africa.semicolon.employeemanager.service.employee.EmployeeService;
 import africa.semicolon.employeemanager.web.exceptions.EmployeeManagerException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,12 +16,16 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Slf4j
 class EmployeeControllerTest {
 
     @Autowired
@@ -86,7 +91,14 @@ class EmployeeControllerTest {
     }
 
     @Test
-    void updateEmployeeDetails() {
+    void updateEmployeeDetails() throws Exception, EmployeeManagerException {
+        Employee employee = employeeService.createEmployee(employeeDto);
+        log.info("Before -> {}", employee);
+        mockMvc.perform(patch("/api/employee/1")
+                        .contentType("application/json")
+                        .content(Files.readAllBytes(Path.of("payload.json"))))
+                .andExpect(status().is(200))
+                .andDo(print());
     }
 
     @Test
