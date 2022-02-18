@@ -1,6 +1,7 @@
 package africa.semicolon.phoenix.data.dto;
 
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class ProductDto {
@@ -9,4 +10,5 @@ public class ProductDto {
     private double price;
     private int quantity;
     private String imageUrl;
+    private MultipartFile image;
 }
