@@ -3,8 +3,11 @@ package africa.semicolon.phoenix.service.product;
 import africa.semicolon.phoenix.data.dto.ProductDto;
 import africa.semicolon.phoenix.data.models.Product;
 import africa.semicolon.phoenix.data.repositories.ProductRepository;
+import africa.semicolon.phoenix.service.cloud.CloudService;
 import africa.semicolon.phoenix.web.exceptions.BusinessLogicException;
 import africa.semicolon.phoenix.web.exceptions.ProductDoesNotExistException;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +16,11 @@ import com.github.fge.jsonpatch.JsonPatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -21,6 +28,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     ProductRepository productRepository;
+
+    @Autowired
+    CloudService cloudService;
 
     @Override
     public List<Product> getAllProducts() {
@@ -38,13 +48,27 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product createProduct(ProductDto productDto) throws BusinessLogicException {
+    public Product createProduct(ProductDto productDto) throws BusinessLogicException, IOException {
         if (productDto == null) throw new IllegalArgumentException("Argument cannot be null");
 
         Optional<Product> queryResult = productRepository.findByName(productDto.getName());
         if (queryResult.isPresent()) throw new BusinessLogicException("Product with name already exists!");
 
         Product product = new Product();
+
+        try {
+            if(productDto.getImage()!=null) {
+                Map<?, ?> uploadResult = cloudService.upload(productDto.getImage().getBytes(),
+                        ObjectUtils.asMap(
+                                "public_id", "inventory/" + productDto.getImage().getOriginalFilename(),
+                                "overwrite", true
+                        ));
+                product.setImageUrl(uploadResult.get("url").toString());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         product.setName(productDto.getName());
         product.setPrice(productDto.getPrice());
         product.setQuantity(productDto.getQuantity());
@@ -92,6 +116,13 @@ public class ProductServiceImpl implements ProductService {
             throw new BusinessLogicException("Update failed");
         }
     }
+
+//    @Override
+//    public String retrieveCloudinaryUrl(String filePath) throws IOException {
+//        File imageFile = new File(filePath);
+//        Map<?,?> cloudinaryResponse = cloudService.upload(Files.readAllBytes(imageFile.toPath()), ObjectUtils.emptyMap());
+//        return cloudinaryResponse.get("url").toString();
+//    }
 
     private Product applyPatchToProduct (JsonPatch productPatch, Product targetProduct)
             throws JsonPatchException, JsonProcessingException {
