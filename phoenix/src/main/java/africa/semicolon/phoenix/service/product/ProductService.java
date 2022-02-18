@@ -8,15 +8,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface ProductService {
 
     List<Product> getAllProducts();
     Product findProductById(Long productId) throws ProductDoesNotExistException;
-    Product createProduct(ProductDto productDto) throws BusinessLogicException;
+    Product createProduct(ProductDto productDto) throws BusinessLogicException, IOException;
 //    Product updateProductById(Long productId, ProductDto productDto) throws ProductDoesNotExistException;
     Product saveOrUpdate(Product product) throws BusinessLogicException;
     Product updateProductDetails(Long productId, JsonPatch patch)
             throws ProductDoesNotExistException, BusinessLogicException, JsonPatchException, JsonProcessingException;
+//    String retrieveCloudinaryUrl(String filePath) throws IOException;
 }
