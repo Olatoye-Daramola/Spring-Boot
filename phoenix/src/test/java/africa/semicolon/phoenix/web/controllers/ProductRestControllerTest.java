@@ -11,6 +11,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,17 +52,15 @@ class ProductRestControllerTest {
     @Test
     @DisplayName("Create a product api api")
     void createProductTest() throws Exception {
-        Product product = new Product();
-        product.setName("Bamboo chair");
-        product.setDescription("World class bamboo");
-        product.setPrice(12345);
-        product.setQuantity(9);
+        MockHttpServletRequestBuilder request =
+                MockMvcRequestBuilders.post("/api/product")
+                        .param("name", "Bamboo chair")
+                        .param("description", "World class bamboo")
+                        .param("price", "540")
+                        .param("quantity", "5");
 
-        String requestBody = objectMapper.writeValueAsString(product);
-
-        mockMvc.perform(post("/api/product")
-                        .contentType("application/json")
-                        .content(requestBody))
+        mockMvc.perform(request
+                        .contentType("multipart/form-data"))
                 .andExpect(status().is(200))
                 .andDo(print());
     }
